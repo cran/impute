@@ -7,6 +7,8 @@
   }
   set.seed(rng.seed)
 
+  if (!is.matrix(data)) stop("Expecting matrix data input!")
+  
   x <- data
   p<-nrow(x)
   col.nas <- drop(rep(1,p)%*%is.na(x))
@@ -16,7 +18,10 @@
   
   x <- knnimp(x,k,maxmiss=rowmax,maxp=maxp)
   
-  return(list(data = x, rng.seed=rng.seed, rng.state=rng.state))
+#  return(list(data = x, rng.seed=rng.seed, rng.state=rng.state))
+  attr(x, "rng.seed") <- rng.seed
+  attr(x, "rng.state") <- rng.state
+  return(x)
 }
   
 knnimp<-function(x,k=10,maxmiss=0.5,maxp=1500){
