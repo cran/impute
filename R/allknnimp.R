@@ -79,7 +79,8 @@ knnimp.internal<-function(x,k,imiss,irmiss,p,n,maxp=maxp){
                    double(p),
                    double(n),
                    integer(p),
-                   integer(n))
+                   integer(n),
+                   PACKAGE="impute")
     ximp<-junk$ximp
 ### Should we check or iterate?
     ximp[junk$imiss==2]<-NA
@@ -114,15 +115,16 @@ mean.miss<-function(x,index=seq(p),imiss=is.na(x)){
   storage.mode(x)<-"double"
   storage.mode(imiss)<-"integer"
   junk<-  .Fortran("misave",
-           x,
-           x0=double(n),
-           p,
-           n,
-           imiss0=as.integer(rep(1,n)),
-           imiss,
-           index,
-           as.integer(length(index))
-           )
+                   x,
+                   x0=double(n),
+                   p,
+                   n,
+                   imiss0=as.integer(rep(1,n)),
+                   imiss,
+                   index,
+                   as.integer(length(index)),
+                   PACKAGE="impute"
+                   )
   x0<-junk$x0
   x0[junk$imiss0==2]<-NA
 x0
@@ -159,7 +161,8 @@ function(x, imiss=is.na(x),imbalance=.2,maxit=5,eps=0.001){
                  ratio=double(1),
                  iter=integer(1),
                  integer(p),
-                 integer(n)
+                 integer(n),
+                 PACKAGE="impute"
                )
 
   clus=matrix(junk$cluster,ncol=2)
