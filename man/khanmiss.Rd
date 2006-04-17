@@ -34,8 +34,8 @@
   centroids of gene expression PNAS 99: 6567-6572.   Available at
   http://www.pnas.org 
 }
-\example{
-  data{khanmiss}
+\examples{
+  data(khanmiss)
 }
  
 \keyword{datasets}
