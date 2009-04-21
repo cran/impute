@@ -1,26 +1,24 @@
 "impute.knn" <-
-function (data, k = 10, rowmax = 0.5, colmax = 0.8, maxp = 1500, 
-    rng.seed = 362436069) 
+  function (data, k = 10,rowmax=0.5,colmax=0.8,maxp=1500, rng.seed=362436069)
 {
-    rng.state <- NULL
-    if (exists(".Random.seed")) {
-        rng.state <- .Random.seed
-    }
-    set.seed(rng.seed)
-    if (!is.matrix(data)) 
-        stop("Expecting matrix data input!")
-    x <- data
-    p <- nrow(x)
-    col.nas <- drop(rep(1, p) %*% is.na(x))
-    if (any(col.nas > colmax * p)) {
-        stop(paste("a column has more than", format(round(colmax * 
-            100)), "% missing values!"))
-    }
-    x <- knnimp(x, k, maxmiss = rowmax, maxp = maxp)
-    attr(x, "rng.seed") <- rng.seed
-    attr(x, "rng.state") <- rng.state
-    return(x)
+  rng.state <- NULL
+  if (exists(".Random.seed")) {
+    rng.state <- .Random.seed
+  }
+  set.seed(rng.seed)
+
+  x <- data
+  p<-nrow(x)
+  col.nas <- drop(rep(1,p)%*%is.na(x))
+  if (any(col.nas>colmax*p)) {
+    stop(paste("a column has more than",format(round(colmax*100)),"% missing values!"))
+  }
+
+  x <- knnimp(x,k,maxmiss=rowmax,maxp=maxp)
+
+  return(list(data = x, rng.seed=rng.seed, rng.state=rng.state))
 }
+
 knnimp<-function(x,k=10,maxmiss=0.5,maxp=1500){
   pn<-dim(x)
   dn<-dimnames(x)
@@ -52,7 +50,7 @@ knnimp<-function(x,k=10,maxmiss=0.5,maxp=1500){
     ximp<-knnimp.split(x,k,imiss,irmiss,p,n,maxp=maxp)
   imiss.new<-is.na(ximp)
   newmiss<-any(imiss.new)
- if( (simax>0) | newmiss ){
+  if( (simax>0) | newmiss ){
     xbar<-mean.miss(x,imiss=imiss)
     if(newmiss)ximp<-meanimp(ximp,imiss.new,xbar)
     if(simax>0){
@@ -66,7 +64,7 @@ knnimp<-function(x,k=10,maxmiss=0.5,maxp=1500){
   dimnames(ximp)<-dn
   ximp
 }
-           
+
 
 knnimp.internal<-function(x,k,imiss,irmiss,p,n,maxp=maxp){
   if(p<=maxp){
@@ -79,10 +77,9 @@ knnimp.internal<-function(x,k,imiss,irmiss,p,n,maxp=maxp){
                    irmiss,
                    as.integer(k),
                    double(p),
-                   double(max(k+1,n)),
+                   double(n),
                    integer(p),
-                   integer(n),
-                   PACKAGE="impute")
+                   integer(n), PACKAGE="impute")
     ximp<-junk$ximp
 ### Should we check or iterate?
     ximp[junk$imiss==2]<-NA
@@ -93,11 +90,11 @@ knnimp.internal<-function(x,k,imiss,irmiss,p,n,maxp=maxp){
 }
 "knnimp.split" <-
   function(x,k,imiss,irmiss,p,n,maxp){
-    twogroups<-twomeans.miss(x,imiss)
-    size<-twogroups$size
+    junk<-twomeans.miss(x)
+    size<-junk$size
     cat("Cluster size",p,"broken into",size,"\n")
-    clus<-twogroups$cluster
-     for(i in seq(size)){
+    clus<-junk$cluster
+    for(i in seq(size)){
       p<-as.integer(size[i])
       index<-clus==i
       x[index,]<-if(p<k)
@@ -109,7 +106,7 @@ knnimp.internal<-function(x,k,imiss,irmiss,p,n,maxp=maxp){
     x
   }
 mean.miss<-function(x,index=seq(p),imiss=is.na(x)){
-  pn<-as.integer(dim(x))
+  pn<-dim(x)
   p<-pn[1]
   n<-pn[2]
   storage.mode(index)<-"integer"
@@ -131,13 +128,13 @@ mean.miss<-function(x,index=seq(p),imiss=is.na(x)){
   x0[junk$imiss0==2]<-NA
 x0
 }
-           
+
 meanimp<-function(x,imiss=is.na(x),xbar=mean.miss(x,imiss=imiss)){
   nr<-nrow(x)
-   if(!is.null(nr)&&(nr>1))x[imiss]<-outer(rep(1,nr),xbar)[imiss]
+  if(!is.null(nr)&&(nr>1))x[imiss]<-outer(rep(1,nr),xbar)[imiss]
   x
 }
-                                         
+
 "twomeans.miss" <-
 function(x, imiss=is.na(x),imbalance=.2,maxit=5,eps=0.001){
   ### Compute the two-means cluster solution for data with missing
@@ -163,8 +160,7 @@ function(x, imiss=is.na(x),imbalance=.2,maxit=5,eps=0.001){
                  ratio=double(1),
                  iter=integer(1),
                  integer(p),
-                 integer(n),
-                 PACKAGE="impute"
+                 integer(n), PACKAGE="impute"
                )
 
   clus=matrix(junk$cluster,ncol=2)

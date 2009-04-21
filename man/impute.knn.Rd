@@ -33,43 +33,41 @@ impute.knn(data ,k = 10, rowmax = 0.5, colmax = 0.8, maxp = 1500, rng.seed=36243
   uses \eqn{k}{k}-nearest neighbors in the space of genes to impute missing
   expression values.
   
-  For each gene with missing values, we find the \eqn{k}{k} nearest
-  neighbors using a Euclidean metric, confined to the columns for which
-  that gene is NOT missing. Each candidate neighbor might be missing
-  some of the coordinates used to calculate the distance. In this case
-  we average the distance from the non-missing coordinates. Having found
-  the k nearest neighbors for a gene, we impute the missing elements by
-  averaging those (non-missing) elements of its neighbors. This can fail
-  if ALL the neighbors are missing in a particular element. In this case
-  we use the overall column mean for that block of genes.
+  For each gene with missing values, we find the \eqn{k}{k} nearest neighbors using
+  a Euclidean metric, confined to the columns for which that gene is NOT
+  missing. Each candidate neighbor might be missing some of the
+  coordinates used to calculate the distance. In this case we average the
+  distance from the non-missing coordinates. Having found the k nearest
+  neighbors for a gene, we impute the missing elements by averaging those
+  (non-missing) elements of its neighbors. This can fail if ALL the
+  neighbors are missing in a particular element. In this case we use the
+  overall column mean for that block of genes.
   
-  Since nearest neighbor imputation costs \eqn{O(p\log(p))}{O(p*log(p))}
-  operations per gene, where \eqn{p}{p} is the number of rows, the
-  computational time can be excessive for large p and a large number of
-  missing rows. Our strategy is to break blocks with more than
-  \code{maxp} genes into two smaller blocks using two-mean
+  Since nearest neighbor imputation costs
+  \eqn{O(p\log(p))}{O(p*log(p))} operations per gene, where \eqn{p}{p} is the
+  number of rows, the computational time can be excessive for large p and
+  a large number of missing rows. Our strategy is to break blocks with
+  more than \code{maxp} genes into two smaller blocks using two-mean
   clustering. This is done recursively till all blocks have less than
   \code{maxp} genes. For each block, \eqn{k}{k}-nearest neighbor
-  imputation is done separately. 
-
+  imputation is done separately.
   We have set the default value of \code{maxp} to 1500. Depending on the
   speed of the machine, and number of samples, this number might be
   increased. Making it too small is counter-productive, because the
-  number of two-mean clustering algorithms will increase. 
+  number of two-mean clustering algorithms will increase.
 
-  For reproducibility, this function reseeds the random number generator
-  using the seed provided or the default seed (362436069).
+  For reproducibility, this function reseeds the random number
+  generator using the seed provided or the default seed (362436069). 
 }
 
 \value{
-  \item{data} {the new imputed data matrix. This data has two
-    attributes, one called \code{rng.seed} that contains the seed used
-    for the random number generator in the imputation and another called
-    \code{rng.state} which contains the state of the random number
-    generator (could be \code{NULL}) prior to the call to this function.
-    The former can be used to reproduce the imputation and should be
-    saved by any prudent user if different from the default.
-    The latter, if necessary, can be used in the calling code to
+  \item{data}{the new imputed data matrix}
+  \item{rng.seed}{the rng.seed that can be used to
+    reproduce the imputation. This should be saved by any prudent user
+    if different from the default.}
+  \item{rng.state}{the state of the random number generator, if
+    available, prior to the call to \code{set.seed}. Otherwise, it is
+    \code{NULL}. If necessary, this can be used in the calling code to
     undo the side-effect of changing the random number generator
     sequence.} 
 }
@@ -87,8 +85,8 @@ khan.imputed <- impute.knn(as.matrix(khan.expr))
 ## khan.imputed$rng.seed should contain the random number seed used
 ## in imputation. In the above invocation, it is the default seed.
 ##
-attr(khan.imputed, "rng.seed") # should be 362436069
-attr(khan.imputed, "rng.state") # should be NULL
+khan.imputed$rng.seed # should be 362436069
+khan.imputed$rng.state # should be NULL
 ##
 ## Second example
 ##
@@ -96,8 +94,8 @@ set.seed(12345)
 saved.state <- .Random.seed
 khan.imputed <- impute.knn(as.matrix(khan.expr))
 # Assuming all goes well with no guarantees in case of error...
-.Random.seed <- attr(khan.imputed, "rng.state")
-sum(saved.state - attr(khan.imputed, "rng.state")) # should be zero!
+.Random.seed <- khan.imputed$rng.state
+sum(saved.state - khan.imputed$rng.state) # should be zero!
 save(khan.imputed, file="khanimputation.Rda")
 }
 
